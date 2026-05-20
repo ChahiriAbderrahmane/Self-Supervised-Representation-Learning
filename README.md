@@ -5,14 +5,48 @@ This repository implements **SimCLR** (contrastive self-supervised learning) wit
 1) **Linear Evaluation (frozen encoder)** → measures *representation quality*  
 2) **Fine-tuning (end-to-end)** → measures *downstream performance when allowed to learn*
 
-> **Important:** GitHub image paths are **case-sensitive** (and Windows is not).  
-> If an image shows locally but not on GitHub, it’s usually because the filename/casing or folder path in the README doesn’t match exactly.
+---
+
+## 0) Installation and Setup
+
+### Requirements
+- Python >= 3.8
+- PyTorch >= 1.11 and torchvision
+- Additional dependencies (numpy, matplotlib, etc.) are in the `requirements.txt` file.
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/username/ssl-simclr-cifar10.git
+cd ssl-simclr-cifar10
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Dataset Preparation
+The CIFAR-10 dataset will be downloaded automatically if it is not found locally. Ensure you have a stable internet connection.
 
 ---
 
-## 1) What we trained (why there are 4 runs)
+## 1) Repository Structure
 
-We ran **two experiments**, each with **two initializations**:
+To ensure smooth navigation, here is an overview of the folder structure:
+```plaintext
+src/  # Source code for training and evaluation
+├── train_simclr.py      # SimCLR pretraining script
+├── eval_linear.py       # Linear evaluation script
+├── finetune.py          # Fine-tuning script
+├── predict_images.py    # Generates per-image predictions
+runs/                    # TensorBoard logs
+results/                 # Plots and prediction outputs
+├── figures/             # Linear evaluation and fine-tune results
+└── predictions/         # Per-image CIFAR-10 test predictions
+```
+
+---
+
+## 2) Experiments Overview
 
 ### A) Fine-tuning (10 epochs)
 - **SimCLR-pretrained → fine-tune**
@@ -30,7 +64,7 @@ We ran **two experiments**, each with **two initializations**:
 
 ---
 
-## 2) Results (numbers)
+## 3) Results and Insights
 
 ### Linear Evaluation (Frozen Encoder, 30 epochs)
 | Model | Best Accuracy |
@@ -51,82 +85,17 @@ This does **not** contradict SSL. Linear eval is the “pure” test of represen
 
 ---
 
-## 3) Plots: Linear Evaluation (Frozen Encoder)
+## 4) Key Takeaways
 
-> Put the exported images here:
-```
-results/figures/linear_eval/
-```
-
-### Test Accuracy
-![Linear Eval - Test Accuracy](results/figures/Linear_eval/Test_acc.png)
-
-### Test Loss
-![Linear Eval - Test Loss](results/figures/Linear_eval/Test_loss.png)
-
-### Train Loss (epoch)
-![Linear Eval - Train Loss (epoch)](results/figures/Linear_eval/Train_epoch.png)
-
-### Train Loss (step)
-![Linear Eval - Train Loss (step)](results/figures/Linear_eval/Train_loss_step.png)
-
-### Learning Rate
-![Linear Eval - LR](results/figures/Linear_eval/Train_lr.png)
-
-**What these plots show (why they matter):**
-- Pretrained curve converges more smoothly and to a better accuracy
-- Scratch has noisier optimization and worse final generalization
-- Same LR schedule → fair comparison (difference comes from representation quality)
+- Self-supervised learning (SimCLR) learns transferable visual representations without labels.
+- Linear evaluation clearly reveals representation quality better than fine-tuning accuracy alone.
+- SimCLR-pretrained features are linearly separable and significantly outperform random features.
+- Qualitative prediction analysis exposes failure modes hidden by aggregate metrics.
+- Proper experimental baselines (scratch vs pretrained) are essential for meaningful evaluation.
 
 ---
 
-## 4) Plots: Fine-tuning (End-to-End)
-
-> Put the exported fine-tuning images here:
-```
-results/figures/finetune/
-```
-
-### Test Accuracy
-![Fine-tune - Test Accuracy](results/figures/finetune/Test_acc.png)
-
-### Test Loss
-![Fine-tune - Test Loss](results/figures/finetune/Test_loss.png)
-
-### Train Loss (epoch)
-![Fine-tune - Train Loss (epoch)](results/figures/finetune/Train_epoch.png)
-
-### Train Loss (step)
-![Fine-tune - Train Loss (step)](results/figures/finetune/Train_Loss_step.png)
-
-### Learning Rate
-![Fine-tune - LR](results/figures/finetune/Train_lr.png)
-
-**What these plots show:**
-- Both runs converge similarly (CIFAR-10 is easy with full supervision)
-- Fine-tuning can hide SSL advantages because the encoder is allowed to learn everything again
-
----
-
-## 5) TensorBoard logs (where they are)
-
-All runs were logged to TensorBoard under the `runs/` directory. You can compare everything together:
-
-```bash
-tensorboard --logdir runs
-```
-
-Or view by experiment type:
-
-```bash
-tensorboard --logdir runs/linear_eval
-tensorboard --logdir runs/finetune
-tensorboard --logdir runs/simclr_cifar10
-```
-
----
-
-## 6) How to reproduce
+## 5) How to Run the Code
 
 ```bash
 # SimCLR pretraining
@@ -143,105 +112,19 @@ python -m src.finetune --mode scratch
 
 ---
 
-## 7) Recommended repo structure for plots
-
-To avoid confusion between linear-eval and fine-tune screenshots, keep them separate and rename consistently:
-
-```
-results/figures/
-├── linear_eval/
-│   ├── test_acc.png
-│   ├── test_loss.png
-│   ├── train_loss_epoch.png
-│   ├── train_loss_step.png
-│   └── train_lr.png
-└── finetune/
-    ├── test_acc.png
-    ├── test_loss.png
-    ├── train_loss_epoch.png
-    ├── train_loss_step.png
-    └── train_lr.png
-```
-
-## 9) Qualitative Results: Per‑Image Predictions (What the model actually sees)
-
-Numerical accuracy alone does not fully explain *how* a model behaves.
-Therefore, we additionally visualize **per‑image predictions** on unseen CIFAR‑10 test samples.
-
-These visualizations directly show the difference between:
-- Random (scratch) representations
-- SimCLR‑pretrained representations
-
-All images are sampled from the CIFAR‑10 **test set**.
-
----
-
-### 9.1 Linear Evaluation – Scratch Encoder
-
-**Setup**
-- Encoder: randomly initialized, frozen
-- Classifier: linear layer only
-
-![Scratch Linear Predictions](results/predictions/linear_scratch.png)
-
-**Observed behavior**
-- Very low sample accuracy (≈ 6–18%)
-- Low confidence predictions
-- Strong class confusion
-- Sometimes prediction collapse to a dominant class
-
-**Explanation**
-With random features, the linear classifier has no meaningful structure to exploit.
-This demonstrates that *good performance cannot emerge without good representations*.
-
----
-
-### 9.2 Linear Evaluation – SimCLR Pretrained Encoder
-
-**Setup**
-- Encoder: SimCLR‑pretrained, frozen
-- Classifier: linear layer only
-
-![Pretrained Linear Predictions](results/predictions/linear_pretrained.png)
-
-**Observed behavior**
-- High sample accuracy (≈ 75%)
-- High confidence predictions (often >90%)
-- Clear class separation
-
-**Explanation**
-SimCLR pretraining produces **linearly separable feature representations**.
-This qualitative improvement directly explains the ~18% gain observed in linear evaluation accuracy.
-
----
-
-### 9.3 Failure Mode: Representation Collapse (Scratch)
-
-![Collapsed Predictions](results/predictions/scratch_preds.png)
-
-**What is happening?**
-- The scratch encoder produces near‑constant features
-- The classifier collapses to predicting a single class
-- Softmax saturates → 100% confidence
-
-**Why this matters**
-This is a *known and expected failure mode* when representations are poor.
-Including it highlights **why self‑supervised learning is necessary**.
-
----
-
-## 10) How to Generate Prediction Visualizations
+## 6) Generating Prediction Visualizations
 
 All qualitative results are generated using the `predict_images.py` utility.
 
 ### Linear Evaluation (Pretrained Encoder)
 ```bash
-python -m src.predict_images   --mode linear_eval   --encoder_ckpt runs/simclr_cifar10/checkpoints/last.pt   --linear_ckpt runs/linear_eval/pretrained_linear_eval_resnet18/best_linear.pt   --n 16   --seed 1   --save_path results/predictions/linear_pretrained.png
-```
-
-### Linear Evaluation (Scratch Encoder)
-```bash
-python -m src.predict_images   --mode linear_eval   --encoder_ckpt NONE   --linear_ckpt runs/linear_eval/scratch_linear_eval_resnet18/best_linear.pt   --n 16   --seed 1   --save_path results/predictions/linear_scratch.png
+python -m src.predict_images \
+  --mode linear_eval \
+  --encoder_ckpt runs/simclr_cifar10/checkpoints/last.pt \
+  --linear_ckpt runs/linear_eval/pretrained_linear_eval_resnet18/best_linear.pt \
+  --n 16 \
+  --seed 1 \
+  --save_path results/predictions/linear_pretrained.png
 ```
 
 ### Notes
@@ -251,10 +134,17 @@ python -m src.predict_images   --mode linear_eval   --encoder_ckpt NONE   --line
 
 ---
 
-## 11) Key Takeaways
+## 7) TensorBoard Logs
 
-- Self-supervised learning (SimCLR) learns transferable visual representations without labels.
-- Linear evaluation clearly reveals representation quality better than fine-tuning accuracy alone.
-- SimCLR-pretrained features are linearly separable and significantly outperform random features.
-- Qualitative prediction analysis exposes failure modes hidden by aggregate metrics.
-- Proper experimental baselines (scratch vs pretrained) are essential for meaningful evaluation.
+All runs were logged to TensorBoard under the `runs/` directory. You can compare everything together:
+```bash
+tensorboard --logdir runs
+```
+Or view by experiment type:
+```bash
+tensorboard --logdir runs/linear_eval
+tensorboard --logdir runs/finetune
+```
+
+
+
