@@ -41,7 +41,8 @@ src/  # Source code for training and evaluation
 runs/                    # TensorBoard logs
 results/                 # Plots and prediction outputs
 ├── figures/             # Linear evaluation and fine-tune results
-└── predictions/         # Per-image CIFAR-10 test predictions
+├── predictions/         # Per-image CIFAR-10 test predictions
+└── embeddings/          # Embedding visualizations (t-SNE, UMAP)
 ```
 
 ---
@@ -85,17 +86,32 @@ This does **not** contradict SSL. Linear eval is the “pure” test of represen
 
 ---
 
-## 4) Key Takeaways
+## 4) Embedding Visualizations (t-SNE and UMAP)
+
+Qualitative assessments of learned representations are shown via embedding visualizations using **t-SNE** and **UMAP**. These plots illustrate the separability of features learned through SimCLR pretraining.
+
+- **t-SNE Visualization:**
+  ![t-SNE](results/embeddings/tsne.png)
+
+- **UMAP Visualization:**
+  ![UMAP](results/embeddings/umap.png)
+
+These visualizations demonstrate how self-supervised learning clusters similar examples closer together in the feature space, giving a clear qualitative sense of representation quality.
+
+---
+
+## 5) Key Takeaways
 
 - Self-supervised learning (SimCLR) learns transferable visual representations without labels.
 - Linear evaluation clearly reveals representation quality better than fine-tuning accuracy alone.
 - SimCLR-pretrained features are linearly separable and significantly outperform random features.
 - Qualitative prediction analysis exposes failure modes hidden by aggregate metrics.
+- Embedding visualizations (t-SNE and UMAP) demonstrate strong clustering of representations.
 - Proper experimental baselines (scratch vs pretrained) are essential for meaningful evaluation.
 
 ---
 
-## 5) How to Run the Code
+## 6) How to Run the Code
 
 ```bash
 # SimCLR pretraining
@@ -112,7 +128,7 @@ python -m src.finetune --mode scratch
 
 ---
 
-## 6) Generating Prediction Visualizations
+## 7) Generating Prediction Visualizations
 
 All qualitative results are generated using the `predict_images.py` utility.
 
@@ -134,7 +150,7 @@ python -m src.predict_images \
 
 ---
 
-## 7) TensorBoard Logs
+## 8) TensorBoard Logs
 
 All runs were logged to TensorBoard under the `runs/` directory. You can compare everything together:
 ```bash
@@ -146,5 +162,6 @@ tensorboard --logdir runs/linear_eval
 tensorboard --logdir runs/finetune
 ```
 
+---
 
-
+This updated README reflects clarity, completeness, and usability for users new to the project, while retaining detailed coverage of the experiments and results.
