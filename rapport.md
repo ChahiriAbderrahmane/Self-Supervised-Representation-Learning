@@ -35,7 +35,7 @@ L’auto-supervision s’appuie sur des contrastes entre des représentations is
 
 ### Entraînement
 - Optimiseur : AdamW.
-- Échauffement des courbes de learning-rate grâce à des plages cosines.
+- Ajustement des courbes de learning-rate grâce à des plages cosines.
 
 ---
 
@@ -58,36 +58,66 @@ class SimCLR(nn.Module):
 ```
 ---
 
-## 5. Résultats
+## 5. Résultats et Analyses
 
-1. **Embeddings Visualisés :**
-   - UMAP/tSNE démontrant la capacité à séparer des classes après entraînement.
+### 5.1 Embeddings générés
 
-2. **Précision supervisée en évaluation linéaire :**
-   - Basé sur les représentations apprises : ~85 % dans notre cas.
+Les embeddings obtenus après entraînement en mode contrastif ont été visualisés à l'aide de UMAP et t-SNE.
 
-3. **Graphiques :**
-   - Courbes de pertes comparant entraînements contrastif et supervisé.
+#### UMAP
+![Embedding UMAP](/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/embeddings/umap.png){ width=80% }
+*Figure 1 : Projection des représentations via UMAP.*
+- Les clusters montrent une séparation claire entre les catégories.
+- La structure multi-classe est émergente sans supervision directe.
 
-Exemples de résultats :
-- **Images Embeddings :** UMAP et t-SNE.
-- **Prédictions :** Pré-entraîné vs à partir de zéro (visuels inclus).
+#### tSNE
+![Embedding tSNE](/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/embeddings/tsne.png){ width=80% }
+*Figure 2 : Projection des représentations via t-SNE.*
 
 ---
 
-## 6. Challenges
+### 5.2 Prédictions
 
-- **Batch Size Limité :** Difficultés ajustées pour NT-Xent sur GPU mémoire réduite.
-- **Augmentations Non-Optimales :** Cache au chaud pour stratégies optimales.
+#### Modèle Pré-entraîné (SimCLR)
+![Prédictions Pré-entraîné](/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/predictions/pretrained_preds.png){ width=80% }
+*Figure 3 : Prédictions issues du modèle pré-entraîné SimCLR.*
+
+#### Modèle entraîné de zéro
+![Prédictions Scratch](/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/predictions/scratch_preds.png){ width=80% }
+*Figure 4 : Prédictions issues du modèle entraîné de zéro.*
+
+---
+
+### 5.3 Courbes d'évaluation
+
+#### Loss (Fine-tuning)
+![Courbe Loss Fine-tuning](/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/figures/finetune/Train_Loss_step.png){ width=80% }
+*Figure 5 : Courbe de perte pendant le fine-tuning.*
+
+#### Précision (Évaluation supervisée)
+![Précision Évaluation](/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/figures/Linear_eval/Test_acc.png){ width=80% }
+*Figure 6 : Courbe de précision lors de l'évaluation linéaire.*
+
+---
+
+## 6. Défis et Résolutions
+
+### Mémoire GPU Limité
+- Pour des batchs réduits, des ajustements ont été faits pour maintenir la stabilité.
+
+### Augmentations des Données
+- Quelques transformations comme le floutage ont eu un impact limité et nécessiteraient plus d'expérimentation.
 
 ---
 
 ## 7. Conclusion et Perspectives
 
-### Résultats
+### Résultats Finalistes
 - Représentations robustes obtenues en utilisant un pipeline SimCLR autodéployé sur CIFAR-10.
+- Précision atteinte : **~85% en évaluation linéaire supervisée.**
 
-### Perspectives
-- Améliorations possibles : backbone plus complexe (ResNet-50), apprentissage multi-échelle et dataset plus grand.
+### Suggestions Futuristes
+- Expansion possible vers les modèles plus larges (ResNet-50).
+- Entraînement multi-échelle ou ajout de données supplémentaires.
 
 ---

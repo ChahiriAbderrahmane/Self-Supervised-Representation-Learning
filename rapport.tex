@@ -1,0 +1,140 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry} % Margins
+\usepackage{graphicx} % For including images
+\usepackage{float} % For positioning figures
+\usepackage{amsmath} % Math symbols
+\usepackage{hyperref} % Hyperlinks
+\usepackage[utf8]{inputenc} % UTF-8 encoding
+\usepackage[T1]{fontenc} % Font encoding
+\usepackage{caption} % Better figure captions
+
+% Document Information
+\title{Rapport Technique : Apprentissage Auto-Supervisé avec SimCLR sur CIFAR-10}
+\author{Projet Deep Learning \newline Encadré par : \textbf{Chahiri}}
+\date{Mai 2026}
+
+\begin{document}
+
+% Title Page
+\maketitle
+\newpage
+
+% Table of Contents
+\tableofcontents
+\newpage
+
+% Section 1: Introduction
+\section{Introduction}
+\subsection{Contexte}
+L’apprentissage auto-supervisé est un paradigme d’apprentissage non-supervisé qui exploite les données sans étiquettes. Il a émergé comme une solution prometteuse pour des tâches complexes en vision par ordinateur.
+
+\subsection{Problématique}
+Comment optimiser la qualité des représentations latentes issues de CIFAR-10 en se basant uniquement sur des techniques contrastives tout en assurant de bonnes performances en évaluation supervisée ?
+
+\subsection{Objectifs}
+Les principaux objectifs sont les suivants :
+\begin{itemize}
+    \item Concevoir un modèle d’apprentissage basé sur SimCLR optimisé pour CIFAR-10.
+    \item Évaluer les représentations apprises par une approche linéaire supervisée.
+\end{itemize}
+
+\newpage
+
+% Section 2: Méthodologie
+\section{Méthodologie}
+
+\subsection{Pipeline SimCLR}
+SimCLR (Simple Contrastive Learning Representation) repose sur deux composantes principales :
+\begin{itemize}
+    \item \textbf{Encodage des images :} Utilisation d’un ResNet-18, adapté à des images petites (32x32 pixels pour CIFAR-10).
+    \item \textbf{Projection :} Transformation des représentations encodées en vecteurs d’embedding de dimension 128 via un MLP (Multi-Layer Perceptron).
+\end{itemize}
+
+\subsection{Augmentations et Transformations}
+Le modèle SimCLR utilise des schémas d’augmentation des données variés pour obtenir des données corrélées :
+\begin{itemize}
+    \item Recadrages aléatoires (Random Cropping).
+    \item Flou gaussien.
+    \item Jitters de couleurs.
+\end{itemize}
+Cette stratégie génère deux versions transformées d’une image donnée pour entraîner le modèle.
+
+\subsection{Optimisation}
+La perte contrainte utilisée est la \textbf{NT-Xent Loss} (Normalized Temperature-scaled Cross-Entropy Loss), qui cherche à minimiser la distance entre les représentations positives tout en maximisant celle entre négatives.
+
+\newpage
+
+% Section 3: Implémentation
+\section{Implémentation}
+
+SimCLR a été implémenté avec \textbf{PyTorch}. Les principaux fichiers du projet sont :
+\begin{itemize}
+    \item \textbf{models.py} : Définition de l’architecture.
+    \item \textbf{train\_simclr.py} : Entraînement avec NT-Xent Loss.
+    \item \textbf{eval\_linear.py} : Évaluation supervisée en ajoutant un classifieur linéaire.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/embeddings/umap.png}
+    \caption{Visualisation des embeddings via UMAP.}
+    \label{fig:umap}
+\end{figure}
+
+\newpage
+
+% Section 4: Résultats
+\section{Résultats}
+
+\subsection{Embeddings Visualisés}
+\textbf{UMAP et t-SNE} sont utilisés pour observer la qualité des représentations produites.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/embeddings/tsne.png}
+    \caption{Visualisation des embeddings via t-SNE.}
+    \label{fig:tsne}
+\end{figure}
+
+\subsection{Courbes de Performance}
+Les graphiques ci-dessous présentent les métriques clés obtenues durant le fine-tuning :
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/figures/finetune/Train_Loss_step.png}
+    \caption{Perte pendant l’entraînement.}
+    \label{fig:train_loss}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{/home/Chahiri/Documents/projects/ssl-simclr-cifar10/results/figures/finetune/Test_acc.png}
+    \caption{Précision obtenue sur les données de test.}
+    \label{fig:test_acc}
+\end{figure}
+
+\newpage
+
+% Section 5: Défis et Perspective
+\section{Défis et Résolutions}
+\begin{itemize}
+    \item \textbf{Limitation mémoire GPU :} Réduction de la taille des batchs et ajustements de l’optimiseur.
+    \item \textbf{Transformations :} Certaines augmentations (par ex. : flou) ont montré des bénéfices limités.
+\end{itemize}
+
+---
+
+% Section 6: Conclusion et Perspectives
+\section{Conclusion et Perspectives}
+
+\subsection{Résumé}
+Ce projet démontre l’efficacité de SimCLR pour l’aprentissage non-supervisé. Environ \textbf{85\%} de précision est atteinte dans le cadre d’une évaluation supervisée.
+
+\subsection{Futurs Travaux}
+\begin{itemize}
+    \item Utiliser des modèles plus profonds (ex. : ResNet-50).
+    \item Étendre le pipeline à d’autres jeux de données.
+\end{itemize}
+
+\end{document}
